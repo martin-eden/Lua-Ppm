@@ -6,7 +6,7 @@
 
 ## Use cases / Why
 
-Load/saving bitmap image without using external libraries.
+Loading/saving bitmap image without using external libraries.
 
 Images in this formats are too large comparing to `.png` or `.jpg`
 or `.gif`. But can you write discrete Fourier transformation
@@ -16,7 +16,7 @@ Your Lua code is not always running on fully charged Linux desktop.
 It may be Raspberry Pi or even NodeMCU.
 
 Maybe you want just generate image from scratch and save it without
-mating your mind with C++ libraries idiosyncrasies.
+mating your mind with C++ library idiosyncrasies.
 
 Maybe you want just write some image filter without binding your
 code to library.
@@ -90,7 +90,7 @@ That's the structure of Lua table returned by `Load()` method:
 This library is supplied with command-line script [Reforge][Reforge].
 
 Without arguments it loads [`Data.ppm`](Data/Data.ppm), parses it
-and saves to [`Data.Reforged.ppm`](Data/Data.Reforged.ppm').
+and saves to [`Data.Reforged.ppm`](Data/Data.Reforged.ppm).
 Not a big deal but I value formatting in my projects:
 
 ```
