@@ -1,8 +1,6 @@
-#!/usr/local/bin/lua
-
 -- Load .ppm, parse it and save back
 
--- Last mod.: 2024-11-06
+-- Last mod.: 2024-11-23
 
 -- Config:
 local Config =
@@ -11,11 +9,16 @@ local Config =
     OutputFileName = _G.arg[2] or 'Data/Data.Reforged.ppm',
   }
 
+--[[ Dev
 package.path = package.path .. ';../../?.lua'
 require('workshop.base')
+--]]
+-- [[ Use
+require('workshop')
+--]]
 
 -- Imports:
-local Ppm = request('Ppm.Interface')
+local Ppm = request('!.concepts.Ppm.Interface')
 local InputFile = request('!.concepts.StreamIo.Input.File')
 local OutputFile = request('!.concepts.StreamIo.Output.File')
 
@@ -24,13 +27,13 @@ local LoadImageFromFile =
   function(FileName)
     local Result
 
-    InputFile:OpenFile(FileName)
+    InputFile:Open(FileName)
 
     Ppm.Input = InputFile
 
     Result = Ppm:Load()
 
-    InputFile:CloseFile()
+    InputFile:Close()
 
     return Result
   end
@@ -40,13 +43,13 @@ local SaveImageToFile =
   function(Image, FileName)
     local Result
 
-    OutputFile:OpenFile(FileName)
+    OutputFile:Open(FileName)
 
     Ppm.Output = OutputFile
 
     Result = Ppm:Save(Image)
 
-    OutputFile:CloseFile()
+    OutputFile:Close()
 
     return Result
   end
