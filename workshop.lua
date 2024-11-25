@@ -167,6 +167,186 @@ end
   2024-03
 ]]
 ]=],
+  ['workshop.concepts.Image.Color.Denormalize'] = [=[
+-- Map normalized color components to byte range
+
+-- Last mod.: 2024-11-25
+
+-- Imports:
+local MapTo = request('MapTo')
+local ToInt = math.floor
+local ApplyFunc = request('!.concepts.List.ApplyFunc')
+
+local Denormalize =
+  function(Color)
+    local DestRange = { 0, 255 }
+    local SourceRange = { 0.0, 1.0 }
+
+    MapTo(DestRange, Color, SourceRange)
+
+    return ApplyFunc(ToInt, Color)
+  end
+
+-- Exports:
+return Denormalize
+
+--[[
+  2024-11-24
+]]
+]=],
+  ['workshop.concepts.Image.Color.Interface'] = [=[
+-- Color structure for images
+
+--[[
+  Color is a list of color components.
+
+  Color component is float in [0.0, 1.0].
+]]
+
+-- Last mod.: 2024-11-25
+
+-- Imports:
+local NameList = request('!.concepts.List.AddNames')
+
+local Color = { 0.0, 0.0, 0.0 }
+
+local Names = { 'Red', 'Green', 'Blue' }
+
+NameList(Color, Names)
+
+-- Exports:
+return Color
+
+--[[
+  2024-11-24
+  2024-11-25
+]]
+]=],
+  ['workshop.concepts.Image.Color.MapTo'] = [=[
+-- Map color components to given range
+
+-- Last mod.: 2024-11-25
+
+-- Imports:
+local MapToRange = request('!.number.map_to_range')
+local ApplyFunc = request('!.concepts.List.ApplyFunc')
+
+local MapTo =
+  function(DestRange, Color, SrcRange)
+    local CurrentMapToRange =
+      function(ColorComponent)
+        return MapToRange(DestRange, ColorComponent, SrcRange)
+      end
+
+    return ApplyFunc(CurrentMapToRange, Color)
+  end
+
+-- Exports:
+return MapTo
+
+--[[
+  2024-11-24
+]]
+]=],
+  ['workshop.concepts.Image.Color.Normalize'] = [=[
+-- Normalize image color components that are in byte range [0, 255]
+
+-- Last mod.: 2024-11-25
+
+-- Imports:
+local MapTo = request('MapTo')
+
+local Normalize =
+  function(Color)
+    local DestRange = { 0.0, 1.0 }
+    local SourceRange = { 0, 255 }
+
+    return MapTo(DestRange, Color, SourceRange)
+  end
+
+-- Exports:
+return Normalize
+
+--[[
+  2024-11-24
+]]
+]=],
+  ['workshop.concepts.List.AddNames'] = [=[
+-- Add names to list entries
+
+-- Last mod.: 2024-11-25
+
+-- Imports:
+local InvertTable = request('!.table.invert')
+
+--[[
+  Name list entries by attaching metatable to list
+
+  Example:
+
+    local Color = { 128, 0, 255 }
+    local ColorNames = { 'Red', 'Green', 'Blue' }
+    NameList(Color, ColorNames)
+    assert(Color.Red == Color[1])
+]]
+local NameList =
+  function(List, Names)
+    local NamesKeys = InvertTable(Names)
+
+    local Metatable = {}
+
+    Metatable.__index =
+      function(Table, Key)
+        return rawget(Table, NamesKeys[Key])
+      end
+
+    Metatable.__newindex =
+      function(Table, Key, Value)
+        if NamesKeys[Key] then
+          rawset(Table, NamesKeys[Key], Value)
+          return
+        end
+        rawset(Table, Key, Value)
+      end
+
+    setmetatable(List, Metatable)
+  end
+
+-- Exports:
+return NameList
+
+--[[
+  2024-11-23
+  2024-11-24
+]]
+]=],
+  ['workshop.concepts.List.ApplyFunc'] = [=[
+-- Modify list by applying function to each element. Returns list
+
+--[[
+  Here we're breaking functional paradigm "result of function is new
+  value". We're modifying argument. It's practical.
+]]
+
+-- Last mod.: 2024-11-25
+
+-- Exports:
+return
+  function(Func, List)
+    assert_function(Func)
+    assert_table(List)
+
+    for Index = 1, #List do
+      List[Index] = Func(List[Index])
+    end
+
+    return List
+  end
+
+--[[
+  2024-11-24
+]]
+]=],
   ['workshop.concepts.List.ToString'] = [=[
 -- Concatenate list of string values to string
 
@@ -209,7 +389,7 @@ return
   ['workshop.concepts.Ppm.Compiler_IsToPpm.Interface'] = [=[
 -- Serialize to pixmap format
 
--- Last mod.: 2024-11-06
+-- Last mod.: 2024-11-25
 
 -- Exports:
 return
@@ -248,9 +428,6 @@ return
     -- Write label
     WriteLabel = request('WriteLabel'),
 
-    -- Parse header
-    ParseHeader = request('ParseHeader'),
-
     -- Write header
     WriteHeader = request('WriteHeader'),
 
@@ -269,62 +446,36 @@ return
   2024-11-03
 ]]
 ]=],
-  ['workshop.concepts.Ppm.Compiler_IsToPpm.ParseHeader'] = [=[
--- Parse pixmap header
-
--- Last mod.: 2024-11-03
-
--- Same notes as for ParseHeader() in [Parse_PpmToIs]
-
--- Imports:
-local HigherParser = request('^.Parser_IsToLua.Interface')
-
--- Exports:
-return
-  function(self, HeaderIs)
-    return HigherParser:ParseHeader(HeaderIs)
-  end
-
---[[
-  2024-11-03
-]]
-]=],
   ['workshop.concepts.Ppm.Compiler_IsToPpm.Run'] = [=[
 -- Convert from .is to .ppm
 
--- Last mod.: 2024-11-06
+-- Last mod.: 2024-11-25
 
--- Exports:
-return
-  --[[
-    Gets list of strings/lists structure.
-    Writes to output in .ppm format.
+--[[
+  Gets list of strings/lists structure. Writes in .ppm format.
 
-    When failed returns false.
-  ]]
+  When failed returns false.
+]]
+local SerializePpm =
   function(self, PpmIs)
     local Label = self.Constants.FormatLabel
+    local HeaderIs = PpmIs[1]
+    local DataIs = PpmIs[2]
 
     self:WriteLabel(Label)
-
-    local HeaderIs = PpmIs[1]
     self:WriteHeader(HeaderIs)
-
-    local Header = self:ParseHeader(HeaderIs)
-
-    if not Header then
-      return false
-    end
-
-    local DataIs = PpmIs[2]
-    self:WriteData(DataIs, Header)
+    self:WriteData(DataIs)
 
     return true
   end
 
+-- Exports:
+return SerializePpm
+
 --[[
   2024-11-02
   2024-11-03
+  2024-11-25
 ]]
 ]=],
   ['workshop.concepts.Ppm.Compiler_IsToPpm.WriteData'] = [=[
@@ -337,17 +488,20 @@ local ListToString = request('!.concepts.List.ToString')
 
 -- Exports:
 return
-  function(self, DataIs, Header)
+  function(self, DataIs)
+    local Height = #DataIs
+    local Width = #DataIs[1]
+
     local ChunkSize = self.NumColumns
     local ColumnsDelim = self.ColumnsDelimiter
     local LinesDelim = self.LinesDelimiter
 
     self:WriteLine(LinesDelim)
 
-    for Row = 1, Header.Height do
+    for Row = 1, Height do
       local Chunks = {}
 
-      for Column = 1, Header.Width do
+      for Column = 1, Width do
         local PixelIs = DataIs[Row][Column]
         local PixelStr = self:CompilePixel(PixelIs)
 
@@ -362,7 +516,7 @@ return
       end
 
       -- Write remained chunk
-      if (Header.Width % ChunkSize ~= 0) then
+      if (Width % ChunkSize ~= 0) then
         local ChunksStr = ListToString(Chunks, ColumnsDelim)
         self:WriteLine(ChunksStr)
       end
@@ -431,6 +585,35 @@ return
   2024-11-02
 ]]
 ]=],
+  ['workshop.concepts.Ppm.Compiler_LuaToIs.CompileColor'] = [=[
+-- Anonymize color to list
+
+-- Last mod.: 2024-11-25
+
+-- Imports:
+local DenormalizeColor = request('!.concepts.Image.Color.Denormalize')
+
+-- Exports:
+return
+  function(self, Color)
+    DenormalizeColor(Color)
+
+    local RedIs = self:CompileColorComponent(Color.Red)
+    local GreenIs = self:CompileColorComponent(Color.Green)
+    local BlueIs = self:CompileColorComponent(Color.Blue)
+
+    if not (RedIs and GreenIs and BlueIs) then
+      return
+    end
+
+    return { RedIs, GreenIs, BlueIs }
+  end
+
+--[[
+  2024-11-03
+  2024-11-25
+]]
+]=],
   ['workshop.concepts.Ppm.Compiler_LuaToIs.CompileColorComponent'] = [=[
 -- Serialize color component integer
 
@@ -460,58 +643,24 @@ return
   2024-11-03
 ]]
 ]=],
-  ['workshop.concepts.Ppm.Compiler_LuaToIs.CompileData'] = [=[
--- Compile pixels to anonymous structure
-
--- Last mod.: 2024-11-03
-
--- Exports:
-return
-  function(self, Ppm)
-    local PixelsIs = {}
-
-    for Row = 1, Ppm.Height do
-      local RowIs = {}
-
-      for Column = 1, Ppm.Width do
-        local Pixel = Ppm.Pixels[Row][Column]
-
-        if not Pixel then
-          return
-        end
-
-        local PixelIs = self:CompilePixel(Pixel)
-
-        if not PixelIs then
-          return
-        end
-
-        table.insert(RowIs, PixelIs)
-      end
-
-      table.insert(PixelsIs, RowIs)
-    end
-
-    return PixelsIs
-  end
-
---[[
-  2024-11-03
-]]
-]=],
   ['workshop.concepts.Ppm.Compiler_LuaToIs.CompileHeader'] = [=[
 -- Emit header anonymous structure
 
--- Last mod.: 2024-11-06
+-- Last mod.: 2024-11-25
 
 -- Exports:
 return
-  function(self, Ppm)
-    local WidthIs =
-      string.format(self.DimensionFmt, Ppm.Width)
+  function(self, Image)
+    local ImageHeight = #Image
 
-    local HeightIs =
-      string.format(self.DimensionFmt, Ppm.Height)
+    local ImageWidth = 0
+    if Image[1] then
+      ImageWidth = #Image[1]
+    end
+
+    local WidthIs = string.format(self.DimensionFmt, ImageWidth)
+
+    local HeightIs = string.format(self.DimensionFmt, ImageHeight)
 
     local MaxValueIs =
       string.format(self.ColorComponentFmt, self.Constants.MaxColorValue)
@@ -521,35 +670,49 @@ return
 
 --[[
   2024-11-03
+  2024-11-25
 ]]
 ]=],
-  ['workshop.concepts.Ppm.Compiler_LuaToIs.CompilePixel'] = [=[
--- Anonymize pixel to structure
+  ['workshop.concepts.Ppm.Compiler_LuaToIs.CompileImage'] = [=[
+-- Compile pixels to anonymous structure
 
--- Last mod.: 2024-11-03
+-- Last mod.: 2024-11-25
 
 -- Exports:
 return
-  function(self, Pixel)
-    local RedIs = self:CompileColorComponent(Pixel.Red)
-    local GreenIs = self:CompileColorComponent(Pixel.Green)
-    local BlueIs = self:CompileColorComponent(Pixel.Blue)
+  function(self, Image)
+    local MatrixIs = {}
 
-    if not (RedIs and GreenIs and BlueIs) then
-      return
+    for RowIndex, Row in ipairs(Image) do
+      MatrixIs[RowIndex] = {}
+
+      for ColumnIndex, Color in ipairs(Row) do
+        if not Color then
+          return
+        end
+
+        local ValueIs = self:CompileColor(Color)
+
+        if not ValueIs then
+          return
+        end
+
+        MatrixIs[RowIndex][ColumnIndex] = ValueIs
+      end
     end
 
-    return { RedIs, GreenIs, BlueIs }
+    return MatrixIs
   end
 
 --[[
   2024-11-03
+  2024-11-25
 ]]
 ]=],
   ['workshop.concepts.Ppm.Compiler_LuaToIs.Interface'] = [=[
 -- Compile named Lua table to anonymous structure (list of strings/lists)
 
--- Last mod.: 2024-11-06
+-- Last mod.: 2024-11-25
 
 -- Exports:
 return
@@ -573,11 +736,11 @@ return
     -- Compile header
     CompileHeader = request('CompileHeader'),
 
-    -- Compile data
-    CompileData = request('CompileData'),
+    -- Compile image data
+    CompileImage = request('CompileImage'),
 
-    -- Compile pixel
-    CompilePixel = request('CompilePixel'),
+    -- Compile color
+    CompileColor = request('CompileColor'),
 
     -- Serialize color component
     CompileColorComponent = request('CompileColorComponent'),
@@ -587,20 +750,25 @@ return
   2024-11-03
   2024-11-04
   2024-11-06
+  2024-11-25
 ]]
 ]=],
   ['workshop.concepts.Ppm.Compiler_LuaToIs.Run'] = [=[
 -- Anonymize parsed .ppm
 
--- Last mod.: 2024-11-06
+-- Last mod.: 2024-11-25
 
 --[[
   Compile Lua table to anonymous structure
 ]]
 local Compile =
-  function(self, Ppm)
-    local HeaderIs = self:CompileHeader(Ppm)
-    local DataIs = self:CompileData(Ppm)
+  function(self, Image)
+    local HeaderIs = self:CompileHeader(Image)
+    local DataIs = self:CompileImage(Image)
+
+    if not (HeaderIs and DataIs) then
+      return
+    end
 
     return { HeaderIs, DataIs }
   end
@@ -722,7 +890,7 @@ return
   ['workshop.concepts.Ppm.Parser_IsToLua.Interface'] = [=[
 -- Parse from anonymous structure to custom Lua format
 
--- Last mod.: 2024-11-06
+-- Last mod.: 2024-11-25
 
 -- Exports:
 return
@@ -734,9 +902,6 @@ return
 
     -- .ppm format constants
     Constants = request('^.Constants.Interface'),
-
-    -- Parse header from raw list data
-    ParseHeader = request('ParseHeader'),
 
     -- Parse raw pixels data
     ParsePixels = request('ParsePixels'),
@@ -792,75 +957,22 @@ return ParseColorComponent
   2024-11-03
 ]]
 ]=],
-  ['workshop.concepts.Ppm.Parser_IsToLua.ParseHeader'] = [=[
--- Parse header from list to table
-
--- Last mod.: 2024-11-04
-
--- Imports:
-local PpmFormat = request('^.Constants.Interface')
-local IsNormalNumber = request('!.number.is_natural')
-
---[[
-  Input is a list of three strings. Output is table.
-
-  Example:
-    { '1920', '1080', '255' } -> { Width = 1920, Height = 1080 }
-]]
-local ParseHeader =
-  function(self, HeaderIs)
-    local Width = HeaderIs[1]
-    local Height = HeaderIs[2]
-    local MaxColorValue = HeaderIs[3]
-
-    Width = tonumber(Width)
-
-    if not IsNormalNumber(Width) then
-      return
-    end
-
-    Height = tonumber(Height)
-
-    if not IsNormalNumber(Height) then
-      return
-    end
-
-    MaxColorValue = tonumber(MaxColorValue)
-
-    if not IsNormalNumber(MaxColorValue) then
-      return
-    end
-
-    if (MaxColorValue ~= self.Constants.MaxColorValue) then
-      return
-    end
-
-    return
-      {
-        Width = Width,
-        Height = Height,
-      }
-  end
-
--- Exports:
-return ParseHeader
-
---[[
-  2024-11-03
-]]
-]=],
-  ['workshop.concepts.Ppm.Parser_IsToLua.ParsePixel'] = [=[
+  ['workshop.concepts.Ppm.Parser_IsToLua.ParsePixel'] = [==[
 -- Parse raw pixel data
 
--- Last mod.: 2024-11-03
+-- Last mod.: 2024-11-25
 
---[[
-  Parses raw pixel data to custom Lua table.
+-- Imports:
+local BaseColor = request('!.concepts.Image.Color.Interface')
+local NormalizeColor = request('!.concepts.Image.Color.Normalize')
 
-  { '0', '128', '255' } -> { Red = 0, Green = 128, Blue = 255 }
+--[=[
+  Parses raw pixel data to annotated list
+
+  { '0', '128', '255' } -> { 0, 128, 255 --[[ aka .Red, .Green, .Blue ]] }
 
   In case of problems returns nil.
-]]
+]=]
 local ParsePixel =
   function(self, PixelIs)
     local Red = self:ParseColorComponent(PixelIs[1])
@@ -871,12 +983,10 @@ local ParsePixel =
       return
     end
 
-    return
-      {
-        Red = Red,
-        Green = Green,
-        Blue = Blue,
-      }
+    local Color = new(BaseColor, { Red, Green, Blue })
+    NormalizeColor(Color)
+
+    return Color
   end
 
 -- Exports:
@@ -884,42 +994,40 @@ return ParsePixel
 
 --[[
   2024-11-03
+  2024-11-25
 ]]
-]=],
-  ['workshop.concepts.Ppm.Parser_IsToLua.ParsePixels'] = [=[
+]==],
+  ['workshop.concepts.Ppm.Parser_IsToLua.ParsePixels'] = [==[
 -- Parse raw pixels data
 
--- Last mod.: 2024-11-03
+-- Last mod.: 2024-11-25
 
---[[
+--[=[
   Parse raw pixels data.
 
-  { [1] = { { '0', '128', '255' } } }
-    ->
-  { [1] = { { Red = 0, Green = 128, Blue = 255 } } }
-]]
+  { { { '0', '128', '255' } } } ->
+
+  { { { 0, 128, 255 --[[ aka .Red, .Green, .Blue ]] } } }
+]=]
 local ParsePixels =
-  function(self, DataIs, Header)
-    local Result = {}
+  function(self, DataIs)
+    local Matrix = {}
 
-    for Row = 1, Header.Height do
-      local PixelsRow = {}
+    for RowIndex, Row in ipairs(DataIs) do
+      Matrix[RowIndex] = {}
 
-      for Column = 1, Header.Width do
-        local PixelIs = DataIs[Row][Column]
+      for ColumnIndex, PixelIs in ipairs(Row) do
         local Pixel = self:ParsePixel(PixelIs)
 
         if not Pixel then
           return
         end
 
-        table.insert(PixelsRow, Pixel)
+        Matrix[RowIndex][ColumnIndex] = Pixel
       end
-
-      table.insert(Result, PixelsRow)
     end
 
-    return Result
+    return Matrix
   end
 
 -- Exports:
@@ -927,15 +1035,20 @@ return ParsePixels
 
 --[[
   2024-11-03
+  2024-11-25
 ]]
-]=],
+]==],
   ['workshop.concepts.Ppm.Parser_IsToLua.Run'] = [=[
 -- Gets structure as grouped strings. Returns table with nice names
+
+-- Last mod.: 2024-11-25
 
 --[[
   Custom Lua format
 
   Input
+
+    1x2 bitmap
 
     {
       { '1', '2', '255' },
@@ -948,13 +1061,8 @@ return ParsePixels
   is converted to
 
     {
-      Width = 1,
-      Height = 2,
-      Pixels =
-        {
-          { { Red = 0, Green = 128, Blue = 255 } },
-          { { Red = 128, Green = 255, Blue = 0 } },
-        }
+      { { 0, 128, 255 } },
+      { { 128, 255, 0 } },
     }
 
   On fail it returns nil.
@@ -963,46 +1071,26 @@ return ParsePixels
 
     * Holes at Input[2] data matrix.
     * If there is color component value that is not in range [0, 255]
-    * Input[1][3] is not "255". It is max color value.
-
-      Format allows integers between 1 and 65536.
-
-      Here we're breaking standard by overnarrowing accepted
-      values. Let it be so.
 ]]
-
--- Last mod.: 2024-11-06
 
 -- Exports:
 return
   function(self, DataIs)
-    local HeaderIs = DataIs[1]
-
-    local Header = self:ParseHeader(HeaderIs)
-
-    if not Header then
-      return
-    end
-
     local PixelsIs = DataIs[2]
 
-    local Pixels = self:ParsePixels(PixelsIs, Header)
+    local Pixels = self:ParsePixels(PixelsIs)
 
     if not Pixels then
       return
     end
 
-    return
-      {
-        Width = Header.Width,
-        Height = Header.Height,
-        Pixels = Pixels,
-      }
+    return Pixels
   end
 
 --[[
   2024-11-02
   2024-11-03
+  2024-11-25
 ]]
 ]=],
   ['workshop.concepts.Ppm.Parser_PpmToIs.GetChunk'] = [=[
@@ -1269,34 +1357,38 @@ return
   ['workshop.concepts.Ppm.Parser_PpmToIs.ParseHeader'] = [=[
 -- Parse header from list to table
 
--- Last mod.: 2024-11-03
+-- Last mod.: 2024-11-25
 
 -- Imports:
--- Higher-level parser. We need it to parse header chunk
-local HigherParser = request('^.Parser_IsToLua.Interface')
+local IsNaturalNumber = request('!.number.is_natural')
 
 --[[
-  Semantics is out of scope of this class. We're grouping lexer.
+  Parse header in Itness format to Lua table
 
-  However.. However to group pixels data we need to know
-  how much pixels there are. We have header chunk. But we don't
-  know values in it. But higher-level parser can parse it for us.
-]]
+  Example:
 
---[[
-  Calling higher-level code pisses me. Alternative is to
-  split higher-level parser by separating header parsing.
-  But it uglyfies design in some other way.
+    { '60', '30', '255' } -> { Width = 60, Height = 30 }
 ]]
+local ParseHeader =
+  function(self, HeaderIs)
+    local WidthIs = HeaderIs[1]
+    local HeightIs = HeaderIs[2]
+
+    local Width = tonumber(WidthIs)
+    assert(IsNaturalNumber(Width))
+
+    local Height = tonumber(HeightIs)
+    assert(IsNaturalNumber(Height))
+
+    return { Width = Width, Height = Height }
+  end
 
 -- Exports:
-return
-  function(self, HeaderIs)
-    return HigherParser:ParseHeader(HeaderIs)
-  end
+return ParseHeader
 
 --[[
   2024-11-03
+  2024-11-25
 ]]
 ]=],
   ['workshop.concepts.Ppm.Parser_PpmToIs.Run'] = [=[
@@ -1809,6 +1901,64 @@ return
   2018-02
 ]]
 ]=],
+  ['workshop.number.constrain'] = [=[
+-- Constrain given number between min and max values
+
+-- Last mod.: 2024-11-24
+
+return
+  function(num, min, max)
+    if (num < min) then
+      return min
+    end
+
+    if (num > max) then
+      return max
+    end
+
+    return num
+  end
+
+--[[
+  2020-09
+]]
+]=],
+  ['workshop.number.fit_to_range'] = [=[
+-- Fit number into given range
+
+-- Last mod.: 2024-11-24
+
+--[[
+  Basically it's classic constrain() (aka clamp()) but here
+  we're passing range as list, not as two arguments.
+]]
+
+-- Imports:
+local Clamp = request('!.number.constrain')
+
+--[[
+  Fit number to given range
+
+  Input
+    Number
+    Range
+      [1] - min
+      [2] - max
+  Output
+    number
+]]
+local FitToRange =
+  function(Number, Range)
+    return Clamp(Number, Range[1], Range[2])
+  end
+
+-- Exports:
+return FitToRange
+
+--[[
+  2024-11-24
+]]
+]=],
   ['workshop.number.in_range'] = [=[
 --[[
   Return true if given number in specified range.
@@ -1851,6 +2001,50 @@ return
 
 --[[
   2024-11-03
+]]
+]=],
+  ['workshop.number.map_to_range'] = [=[
+-- Map number belonging to one range to number in another range
+
+-- Last mod.: 2024-11-24
+
+-- Imports:
+local FitToRange = request('!.number.fit_to_range')
+
+--[[
+  Parameters order may look strange here. But consider
+  calling it with infix notation: {0.0, 1.0}.MapNumber(64, {0, 255})
+]]
+local MapNumber =
+  function(DestRange, Number, SrcRange)
+    --[[
+      Typical implementation is usually uses one formula.
+      I can understand it and write it that way.
+      But I value clarity more than smartassism and some performance.
+    ]]
+
+    local SrcRangeLen = SrcRange[2] - SrcRange[1]
+    local DestRangeLen = DestRange[2] - DestRange[1]
+
+    Number = FitToRange(Number, SrcRange)
+
+    -- Offset in source range
+    Number = Number - SrcRange[1]
+    -- Part of source range
+    Number = Number / SrcRangeLen
+    -- Offset in dest range
+    Number = Number * DestRangeLen
+    -- Value in dest range
+    Number = Number + DestRange[1]
+
+    return Number
+  end
+
+-- Exports:
+return MapNumber
+
+--[[
+  2024-11-24
 ]]
 ]=],
   ['workshop.system.install_assert_functions'] = [=[
@@ -2006,6 +2200,17 @@ return
   Main effect gave changing "is_table" to explicit type() check.
 ]]
 ]=],
+  ['workshop.table.invert'] = [[
+return
+  function(t)
+    assert_table(t)
+    local result = {}
+    for k, v in pairs(t) do
+      result[v] = k
+    end
+    return result
+  end
+]],
   ['workshop.table.new'] = [=[
 --[[
   Clone table <base_obj>. Optionally override fields in clone with
