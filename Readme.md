@@ -76,9 +76,9 @@ That's the structure of Lua table returned by `Load()` method:
 (
   (
     (
-      [1] = float // aka .Red
-      [2] = float // aka .Green
-      [3] = float // aka .Blue
+      [1] = float_ui // aka .Red
+      [2] = float_ui // aka .Green
+      [3] = float_ui // aka .Blue
     ) ^ Width
   ) ^ Height
 )
@@ -88,7 +88,7 @@ Color component values are floats in unit interval [0.0, 1.0].
 Basically color is list of three floats. But indices of this list
 are aliased: `Red` for index 1, `Green` for 2, `Blue` for three.
 
-We don't provide image matrix width and height. You can always
+We don't provide image matrix's width and height. You can always
 calculate it by using Lua's `#`: height is `#Image`, width is
 length of any line, let it be line 1: width is `#Image[1]`.
 
