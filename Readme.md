@@ -4,13 +4,14 @@
 
 `Plain portable pixmap` format loader/saver.
 
+
 ## Use cases / Why
 
 Loading/saving bitmap image without using external libraries.
 
 Images in this formats are too large comparing to `.png` or `.jpg`
 or `.gif`. But can you write discrete Fourier transformation
-in one evening (to load JPEG)?
+in one evening?
 
 Your Lua code is not always running on fully charged Linux desktop.
 It may be Raspberry Pi or even NodeMCU.
@@ -60,6 +61,7 @@ local Image = LoadImageFromFile(InputFileName)
 Note that we're plugging input stream to codec: `Ppm.Input = InputFile`.
 So codec does not care what that stream is: string, pipe or file.
 
+
 ## Saving
 
 Saving is similar to loading. But stream connection point is named
@@ -72,18 +74,24 @@ That's the structure of Lua table returned by `Load()` method:
 
 ```
 (
-  Width = int
-  Height = int
-  Pixels =
+  (
     (
-      (
-        Red = int
-        Green = int
-        Blue = int
-      ) ^ Width
-    ) ^ Height
+      [1] = float // aka .Red
+      [2] = float // aka .Green
+      [3] = float // aka .Blue
+    ) ^ Width
+  ) ^ Height
 )
 ```
+
+Color component values are floats in unit interval [0.0, 1.0].
+Basically color is list of three floats. But indices of this list
+are aliased: `Red` for index 1, `Green` for 2, `Blue` for three.
+
+We don't provide image matrix width and height. You can always
+calculate it by using Lua's `#`: height is `#Image`, width is
+length of any line, let it be line 1: width is `#Image[1]`.
+
 
 ## Command-line tool
 
