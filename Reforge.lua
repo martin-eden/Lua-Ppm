@@ -1,6 +1,6 @@
 -- Load .ppm, parse it and save back
 
--- Last mod.: 2024-11-23
+-- Last mod.: 2024-11-30
 
 -- Config:
 local Config =
@@ -14,7 +14,7 @@ package.path = package.path .. ';../../?.lua'
 require('workshop.base')
 --]]
 -- [[ Use
-require('workshop')
+require('workshop.base')
 --]]
 
 -- Imports:
