@@ -163,8 +163,8 @@ It does not use any OS-specific functions so may run even under Windows!
 
 [FormatSpec]: https://netpbm.sourceforge.net/doc/ppm.html
 [StreamIo]: https://github.com/martin-eden/workshop/tree/master/concepts/StreamIo
-[DataValuesFormatting]: Ppm/Compiler_LuaToIs/Interface.lua
-[DataStringsFormatting]: Ppm/Compiler_IsToPpm/Interface.lua
+[DataValuesFormatting]: workshop/concepts/Ppm/Compiler_LuaToIs/Interface.lua
+[DataStringsFormatting]: workshop/concepts/Ppm/Compiler_IsToPpm/Interface.lua
 [Reforge]: Reforge.lua
 
 [Repos]: https://github.com/martin-eden/contents
