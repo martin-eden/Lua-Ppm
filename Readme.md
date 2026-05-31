@@ -1,6 +1,6 @@
 ## What
 
-(2024-11)
+2024, 2026
 
 `Plain portable pixmap` format loader/saver.
 
@@ -33,65 +33,51 @@ to standard `.png`. That's a way to main road.
 Load `Data.ppm` as Lua table `Image`.
 
 ```Lua
-local InputFileName = 'Data.ppm'
+local input_file_name = 'Data.ppm'
 
 -- Imports:
-local Ppm = request('Ppm.Interface')
+local parse_netpbm = request('!.concepts.Codec_Netpbm.parse')
 local InputFile = request('!.concepts.StreamIo.Input.File')
 
 -- Load image from file
-local LoadImageFromFile =
-  function(FileName)
-    local Result
+local load_image_from_file =
+  function(filename)
+    InputFile:Open(filename)
 
-    InputFile:OpenFile(FileName)
+    local Image = parse_netpbm(InputFile)
 
-    Ppm.Input = InputFile
+    InputFile:Close()
 
-    Result = Ppm:Load()
-
-    InputFile:CloseFile()
-
-    return Result
+    return Image
   end
 
-local Image = LoadImageFromFile(InputFileName)
+local Image = load_image_from_file(input_file_name)
 ```
-
-Note that we're plugging input stream to codec: `Ppm.Input = InputFile`.
-So codec does not care what that stream is: string, pipe or file.
 
 
 ## Saving
 
-Saving is similar to loading. But stream connection point is named
-`.Output`. And method is unsurprisingly named `Save`.
+Save Lua table `Image` to file `Data.ppm`.
 
+```Lua
+local output_file_name = 'Data.ppm'
 
-## Lua image format
+-- Imports:
+local compile_netpbm = request('!.concepts.Codec_Netpbm.compile')
+local OutputFile = request('!.concepts.StreamIo.Output.File')
 
-That's the structure of Lua table returned by `Load()` method:
+-- Save image to file
+local save_image_to_file =
+  function(filename, Image)
+    OutputFile:Open(filename)
 
+    compile_netpbm(OutputFile, Image)
+
+    OutputFile:Close()
+  end
+
+save_image_to_file(output_file_name, Image)
 ```
-(
-  (
-    (
-      [1] = float_ui // aka .Red
-      [2] = float_ui // aka .Green
-      [3] = float_ui // aka .Blue
-    ) ^ Width
-  ) ^ Height
-)
-```
-
-Color component values are floats in unit interval [0.0, 1.0].
-Basically color is list of three floats. But indices of this list
-are aliased: `Red` for index 1, `Green` for 2, `Blue` for three.
-
-We don't provide image matrix's width and height. You can always
-calculate it by using Lua's `#`: height is `#Image`, width is
-length of any line, let it be line 1: width is `#Image[1]`.
-
 
 ## Command-line tool
 
@@ -121,50 +107,30 @@ P3
 ```
 
 ```
-P3  # Plain portable pixmap
-60 131 255  # Width, Height, Max color component value
+P3  # Color, text
+60 131 255  # Width, Height, MaxValue
 
+# Line 1
 126 062 116  126 062 116  126 062 116  126 062 116
 126 062 116  126 062 116  126 062 116  126 062 116
 126 062 116  084 042 106  084 042 106  084 042 106
-084 042 106  084 042 106  084 042 106  084 042 106
-084 042 106  084 042 106  084 042 106  084 042 106
-084 042 106  084 042 106  084 042 106  084 042 106
-084 042 106  084 042 106  084 042 106  084 042 106
-084 042 106  084 042 106  084 042 106  084 042 106
-084 042 106  084 042 106  084 042 106  084 042 106
-084 042 106  084 042 106  084 042 106  084 042 106
-084 042 106  084 042 106  084 042 106  084 042 106
-084 042 106  084 042 106  084 042 106  084 042 106
-084 042 106  084 042 106  084 042 106  084 042 106
-084 042 106  084 042 106  084 042 106  084 042 106
-084 042 106  084 042 106  084 042 106  084 042 106
-
-126 062 116  126 062 116  126 062 116  126 062 116
 084 042 106  084 042 106  084 042 106  084 042 106
 ...
 ```
 
 ## Requirements
 
-  * Lua 5.4
-
-It does not use any OS-specific functions so may run even under Windows!
+  * Lua 5.3 (or 5.4, 5.5)
 
 
 ## See also
 
-* [.ppm format specification][FormatSpec]
-* [Abstracted I/O specification][StreamIo]
-* [Data values formatting][DataValuesFormatting]
-* [Data strings formatting][DataStringsFormatting]
-* ["Reforge", CLI script][Reforge]
+* [.ppm][FormatSpec] -- Official format specification
+* [`Reforge`][Reforge] -- Local script to recode data
+* [`workshop`][workshop] -- My personal Lua framework where this codec lives
 * [My other repositories][Repos]
 
 [FormatSpec]: https://netpbm.sourceforge.net/doc/ppm.html
-[StreamIo]: https://github.com/martin-eden/workshop/tree/master/concepts/StreamIo
-[DataValuesFormatting]: workshop/concepts/Ppm/Compiler_LuaToIs/Interface.lua
-[DataStringsFormatting]: workshop/concepts/Ppm/Compiler_IsToPpm/Interface.lua
 [Reforge]: Reforge.lua
-
+[workshop]: https://github.com/martin-eden/workshop
 [Repos]: https://github.com/martin-eden/contents
