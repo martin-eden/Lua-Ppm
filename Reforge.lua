@@ -43,11 +43,9 @@ local save_image_to_file =
   function(filename, Image)
     OutputFile:Open(filename)
 
-    local is_done = compile_netpbm(OutputFile, Image)
+    compile_netpbm(OutputFile, Image)
 
     OutputFile:Close()
-
-    return is_done
   end
 
 -- Reformat
