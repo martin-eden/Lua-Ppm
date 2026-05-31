@@ -1,12 +1,15 @@
 -- Load .ppm, parse it and save back
 
--- Last mod.: 2024-11-30
+--[[
+  Author: Martin Eden
+  Last mod.: 2026-05-31
+]]
 
 -- Config:
 local Config =
   {
-    InputFileName = _G.arg[1] or 'Data/Data.ppm',
-    OutputFileName = _G.arg[2] or 'Data/Data.Reforged.ppm',
+    input_file_name = _G.arg[1] or 'Data/Data.ppm',
+    output_file_name = _G.arg[2] or 'Data/Data.Reforged.ppm',
   }
 
 --[[ Dev
@@ -18,79 +21,61 @@ require('workshop.base')
 --]]
 
 -- Imports:
-local Ppm = request('!.concepts.Ppm.Interface')
+local parse_netpbm = request('!.concepts.Codec_Netpbm.parse')
+local compile_netpbm = request('!.concepts.Codec_Netpbm.compile')
 local InputFile = request('!.concepts.StreamIo.Input.File')
 local OutputFile = request('!.concepts.StreamIo.Output.File')
 
 -- Load image from file
-local LoadImageFromFile =
-  function(FileName)
-    local Result
+local load_image_from_file =
+  function(filename)
+    InputFile:Open(filename)
 
-    InputFile:Open(FileName)
-
-    Ppm.Input = InputFile
-
-    Result = Ppm:Load()
+    local Image = parse_netpbm(InputFile)
 
     InputFile:Close()
 
-    return Result
+    return Image
   end
 
 -- Save image to file
-local SaveImageToFile =
-  function(Image, FileName)
-    local Result
+local save_image_to_file =
+  function(filename, Image)
+    OutputFile:Open(filename)
 
-    OutputFile:Open(FileName)
-
-    Ppm.Output = OutputFile
-
-    Result = Ppm:Save(Image)
+    local is_done = compile_netpbm(OutputFile, Image)
 
     OutputFile:Close()
 
-    return Result
+    return is_done
   end
 
 -- Reformat
-local Reformat =
-  function(InputFileName, OutputFileName)
-    print(('Loading image from "%s".'):format(InputFileName))
+local reformat =
+  function(input_file_name, output_file_name)
+    print(('Loading image from "%s".'):format(input_file_name))
 
-    local Image = LoadImageFromFile(InputFileName)
+    local Image = load_image_from_file(input_file_name)
 
     if not Image then
       print('Failed to load image.')
       return
     end
 
-    print(('Saving image to "%s".'):format(OutputFileName))
+    print(('Saving image to "%s".'):format(output_file_name))
 
-    local IsSaved = SaveImageToFile(Image, OutputFileName)
-
-    if not IsSaved then
-      print('Failed to save image.')
-      return
-    end
-
-    return true
+    save_image_to_file(output_file_name, Image)
   end
 
--- Exports:
-do
-  print('[Reforge .ppm] Started.')
+-- ( [Main]
+print('[Reforge .ppm] Started.')
 
-  local JobDone = Reformat(Config.InputFileName, Config.OutputFileName)
+reformat(Config.input_file_name, Config.output_file_name)
 
-  if not JobDone then
-    print('Failed to do the job.')
-  end
-
-  print('[Reforge .ppm] Done.')
-end
+print('[Reforge .ppm] Done.')
+-- )
 
 --[[
-  2024-11-04
+  2024
+  2026-05-31
 ]]
