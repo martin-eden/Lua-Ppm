@@ -2,7 +2,7 @@
 
 --[[
   Author: Martin Eden
-  Last mod.: 2026-05-31
+  Last mod.: 2026-06-01
 ]]
 
 -- Config:
@@ -14,11 +14,8 @@ local Config =
 
 --[[ Dev
 package.path = package.path .. ';../../?.lua'
-require('workshop.base')
 --]]
--- [[ Use
 require('workshop.base')
---]]
 
 -- Imports:
 local parse_netpbm = request('!.concepts.Codec_Netpbm.parse')
@@ -40,10 +37,10 @@ local load_image_from_file =
 
 -- Save image to file
 local save_image_to_file =
-  function(filename, Image)
+  function(Image, filename)
     OutputFile:Open(filename)
 
-    compile_netpbm(OutputFile, Image)
+    compile_netpbm(Image, OutputFile)
 
     OutputFile:Close()
   end
@@ -51,7 +48,7 @@ local save_image_to_file =
 -- Reformat
 local reformat =
   function(input_file_name, output_file_name)
-    print(('Loading image from "%s".'):format(input_file_name))
+    print(string.format('Loading image from "%s".', input_file_name))
 
     local Image = load_image_from_file(input_file_name)
 
@@ -60,9 +57,9 @@ local reformat =
       return
     end
 
-    print(('Saving image to "%s".'):format(output_file_name))
+    print(string.format('Saving image to "%s".', output_file_name))
 
-    save_image_to_file(output_file_name, Image)
+    save_image_to_file(Image, output_file_name)
   end
 
 -- ( [Main]
