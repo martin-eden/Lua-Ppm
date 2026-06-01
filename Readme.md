@@ -1,31 +1,30 @@
 ## What
 
-2024, 2026
+| Created | Updated |
+|:-------:|:-------:|
+| 2024    | 2026-06 |
 
-`Plain portable pixmap` format loader/saver.
+`Plain portable pixmap` codec.
 
 
 ## Use cases / Why
 
-Loading/saving bitmap image without using external libraries.
+☑ It's simple and conscious text format. Fun to implement
 
-Images in this formats are too large comparing to `.png` or `.jpg`
-or `.gif`. But can you write discrete Fourier transformation
-in one evening?
+☑ Loading/saving bitmap image without using external libraries
 
-Your Lua code is not always running on fully charged Linux desktop.
-It may be Raspberry Pi or even NodeMCU.
+☑ Image files are human-readable and editable text files
 
-Maybe you want just generate image from scratch and save it without
-mating your mind with C++ library idiosyncrasies.
+☐ Compact data
 
-Maybe you want just write some image filter without binding your
-code to library.
+  Images in this formats are too large comparing to `.png` or `.gif`.
 
-That's the point of `.ppm` plain text format.
+☐ Wide support
 
-Installing `netpbm` (or `imagemagick`) adds tools to convert `.ppm`
-to standard `.png`. That's a way to main road.
+  It's not widely used.
+
+  Installing `netpbm` (or `imagemagick`) adds tools to convert `.ppm`
+  to standard `.png`. That's a way to main road.
 
 
 ## Loading
@@ -68,24 +67,59 @@ local OutputFile = request('!.concepts.StreamIo.Output.File')
 
 -- Save image to file
 local save_image_to_file =
-  function(filename, Image)
+  function(Image, filename)
     OutputFile:Open(filename)
 
-    compile_netpbm(OutputFile, Image)
+    compile_netpbm(Image, OutputFile)
 
     OutputFile:Close()
   end
 
-save_image_to_file(output_file_name, Image)
+save_image_to_file(Image, output_file_name)
+```
+
+## Internal image data format
+
+For given `.ppm` data
+```
+P3
+1 2 255
+0 128 255 128 255 0
+```
+
+Lua image table is
+```lua
+{
+  Settings =
+    {
+      Width = 1,
+      Height = 2,
+      ColorFormat = 'rgb',
+    },
+  Data =
+    {
+      [1] = { [1] = { 0.0, 0.5, 1.0 } },
+      [2] = { [1] = { 0.5, 1.0, 0.0 } },
+    },
+}
 ```
 
 ## Command-line tool
 
-This library is supplied with command-line script [Reforge][Reforge].
+This repository is supplied with command-line script [Reforge][Reforge].
+
+It does full parse-convert-convert-compile cycle and internally serves as a test.
+
+It recompiles `.ppm` file, effectively removing all existing comments and redundant data.
+
+Externally it may be used as data beautifier.
+
+It's used as `$ lua Reforge.lua [ <input_file> <output_file> ]`.
 
 Without arguments it loads [`Data.ppm`](Data/Data.ppm), parses it
 and saves to [`Data.Reforged.ppm`](Data/Data.Reforged.ppm).
-Not a big deal but I value formatting in my projects:
+
+I value formatting in my projects:
 
 ```
 P3
@@ -98,14 +132,8 @@ P3
 126
 62
 116
-126
-62
-116
-126
-62
-116
 ```
-
+→
 ```
 P3  # Color, text
 60 131 255  # Width, Height, MaxValue
@@ -120,7 +148,13 @@ P3  # Color, text
 
 ## Requirements
 
+  * Linux (file loading tools assume POSIX filesystem)
   * Lua 5.3 (or 5.4, 5.5)
+
+
+## Install/remove
+
+* Clone repo
 
 
 ## See also
@@ -128,9 +162,9 @@ P3  # Color, text
 * [.ppm][FormatSpec] -- Official format specification
 * [`Reforge`][Reforge] -- Local script to recode data
 * [`workshop`][workshop] -- My personal Lua framework where this codec lives
-* [My other repositories][Repos]
+* [My other projects][contents]
 
 [FormatSpec]: https://netpbm.sourceforge.net/doc/ppm.html
 [Reforge]: Reforge.lua
 [workshop]: https://github.com/martin-eden/workshop
-[Repos]: https://github.com/martin-eden/contents
+[contents]: https://github.com/martin-eden/contents
