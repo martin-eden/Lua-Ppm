@@ -105,17 +105,19 @@ save_image_to_file(Image, output_file_name)
 ## Command-line tool
 
 This repository is supplied with command-line script [Reforge][Reforge].
+It recompiles `.ppm` file, effectively removing all existing comments
+and redundant data.
 
-It does full parse-convert-convert-compile cycle and internally serves as a test.
+Usage:
 
-It recompiles `.ppm` file, effectively removing all existing comments and redundant data.
+```
+$ lua Reforge.lua [ <input_file> <output_file> ]
+```
 
-Externally it may be used as data beautifier.
+Internally serves as a test. Externally it may be used as data beautifier.
 
-It's used as `$ lua Reforge.lua [ <input_file> <output_file> ]`.
-
-Without arguments it loads [`Data.ppm`](Data/Data.ppm), parses it
-and saves to [`Data.Reforged.ppm`](Data/Data.Reforged.ppm).
+Without arguments it loads [`Data/Data.ppm`](Data/Data.ppm), parses it
+and saves to [`Data/Data.Reforged.ppm`](Data/Data.Reforged.ppm).
 
 I value formatting in my projects:
 
