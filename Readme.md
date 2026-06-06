@@ -52,30 +52,6 @@ local Image = load_image_from_file(input_file_name)
 ```
 
 
-## Saving
-
-Save Lua table `Image` to file `Data.ppm`.
-
-```Lua
-local output_file_name = 'Data.ppm'
-
--- Imports:
-local compile_netpbm = request('!.concepts.Codec_Netpbm.compile')
-local OutputFile = request('!.concepts.StreamIo.Output.File')
-
--- Save image to file
-local save_image_to_file =
-  function(Image, filename)
-    OutputFile:Open(filename)
-
-    compile_netpbm(Image, OutputFile)
-
-    OutputFile:Close()
-  end
-
-save_image_to_file(Image, output_file_name)
-```
-
 ## Internal image data format
 
 For given `.ppm` data
@@ -100,6 +76,30 @@ Lua image table is
       [2] = { [1] = { 0.5, 1.0, 0.0 } },
     },
 }
+```
+
+## Saving
+
+Save Lua table `Image` to file `Data.ppm`.
+
+```Lua
+local output_file_name = 'Data.ppm'
+
+-- Imports:
+local compile_netpbm = request('!.concepts.Codec_Netpbm.compile')
+local OutputFile = request('!.concepts.StreamIo.Output.File')
+
+-- Save image to file
+local save_image_to_file =
+  function(Image, filename)
+    OutputFile:Open(filename)
+
+    compile_netpbm(Image, OutputFile)
+
+    OutputFile:Close()
+  end
+
+save_image_to_file(Image, output_file_name)
 ```
 
 ## Command-line tool
