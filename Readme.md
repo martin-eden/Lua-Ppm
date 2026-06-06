@@ -1,3 +1,5 @@
+[![DeepWiki][DeepWiki_Logo]][DeepWiki_Repo] (sometimes AI explains it better)
+
 ## What
 
 | Created | Updated |
@@ -184,6 +186,9 @@ Scope of tool is text-only one-image formats. That's intentional.
 * [`Reforge`][Reforge] -- Local script to recode data
 * [`workshop`][workshop] -- My personal Lua framework where this codec lives
 * [My other projects][contents]
+
+[DeepWiki_Logo]: https://deepwiki.com/badge.svg
+[DeepWiki_Repo]: https://deepwiki.com/martin-eden/Lua-Ppm
 
 [FormatSpec]: https://netpbm.sourceforge.net/doc/ppm.html
 [Reforge]: Reforge.lua
