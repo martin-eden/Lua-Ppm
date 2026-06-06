@@ -9,22 +9,20 @@
 
 ## Use cases / Why
 
-☑ It's simple and conscious text format. Fun to implement
+☑ Image files are human-editable text files
 
-☑ Loading/saving bitmap image without using external libraries
-
-☑ Image files are human-readable and editable text files
+☑ Working with bitmap image without using binary libraries
 
 ☐ Compact data
 
-  Images in this formats are too large comparing to `.png` or `.gif`.
+  Images in this format are too large comparing to `.png` or `.gif`.
 
 ☐ Wide support
 
   It's not widely used.
 
-  Installing `netpbm` (or `imagemagick`) adds tools to convert `.ppm`
-  to standard `.png`. That's a way to main road.
+  Install `netpbm` (or `imagemagick`) to add tools to convert `.ppm`
+  to standard `.png`.
 
 
 ## Loading
