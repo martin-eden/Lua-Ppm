@@ -144,6 +144,27 @@ P3  # Color, text
 ...
 ```
 
+## Design note
+
+Netpbm is a family of seven formats: `P1`, `P2`, `P3`, `P4`, `P5`, `P6`, `P7`.
+All of them start with text header. Following data can be encoded as text or
+binary. `P7` data encoding is header-dependent.
+
+|    | Is text | Is supported | Note
+|:--:|:-------:|:------------:|:--------------------------------
+| P1 |    ☑    |      ☑       | Text bitmap
+| P2 |    ☑    |      ☑       | Text grayscale
+| P3 |    ☑    |      ☑       | Text color
+| P4 |    ☐    |      ☐       | Binary bitmap
+| P5 |    ☐    |      ☐       | Binary grayscale
+| P6 |    ☐    |      ☐       | Binary color
+| P7 |    ∀    |      ☐       | Several images container
+
+Scope of tool is text-only one-image formats. That's intentional.
+
+`P7` is not supported because I have no practical need for it.
+
+
 ## Requirements
 
   * Linux (file loading tools assume POSIX filesystem)
