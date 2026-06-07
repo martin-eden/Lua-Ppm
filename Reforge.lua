@@ -2,7 +2,7 @@
 
 --[[
   Author: Martin Eden
-  Last mod.: 2026-06-01
+  Last mod.: 2026-06-07
 ]]
 
 -- Config:
@@ -18,8 +18,8 @@ package.path = package.path .. ';../../?.lua'
 require('workshop.base')
 
 -- Imports:
-local parse_netpbm = request('!.concepts.Codec_Netpbm.parse')
-local compile_netpbm = request('!.concepts.Codec_Netpbm.compile')
+local parse_netpbm = request('!.concepts.codec_netpbm.parse')
+local compile_netpbm = request('!.concepts.codec_netpbm.compile')
 local InputFile = request('!.concepts.StreamIo.Input.File')
 local OutputFile = request('!.concepts.StreamIo.Output.File')
 
