@@ -1,5 +1,5 @@
-P3  # Color, text
-60 131 255  # Width, Height, MaxValue
+P3  # Color image, text format
+60 131 255  # Width Height MaxValue
 
 # Line 1
 126 062 116  126 062 116  126 062 116  126 062 116
