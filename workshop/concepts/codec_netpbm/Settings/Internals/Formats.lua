@@ -2,7 +2,7 @@
 
 --[[
   Author: Martin Eden
-  Last mod.: 2026-06-04
+  Last mod.: 2026-06-15
 ]]
 
 local Formats =
@@ -10,17 +10,14 @@ local Formats =
     {
       label = 'P1',
       Settings = { num_channels = 1, num_channel_values = 2 },
-      comment = 'Monochrome, text',
     },
     {
       label = 'P2',
       Settings = { num_channels = 1 },
-      comment = 'Grayscale, text',
     },
     {
       label = 'P3',
       Settings = { num_channels = 3 },
-      comment = 'Color, text',
     },
   }
 
@@ -29,7 +26,7 @@ return Formats
 
 --[[
   2025 # #
-  2026-01-25
-  2026-05-31
+  2026 # #
   2026-06-04
+  2026-06-15
 ]]
